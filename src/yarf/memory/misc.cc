@@ -12,7 +12,7 @@
 
 using namespace yarf::memory;
 
-uint32_t GetAlignmentSize(uint32_t size, uint32_t alignment_level) {
+uint32_t yarf::memory::GetAlignmentSize(uint32_t size, uint32_t alignment_level) {
   
 	if ( 8 == alignment_level )
 	{

@@ -70,20 +70,21 @@ int CSendUnlockQueue::Send(const char* data, uint32_t len) {
     return err::kChanFull;
   }
 
-  ChannelPackHead cur_head;
-  cur_head.align_body_len = align_pack_size - kPackHeadSize;
-  cur_head.body_len = pack_body_size;
-  cur_head.seq = header_->seq;
+  ChannelPackHead pack_header;
+  pack_header.align_body_len = align_pack_size - kPackHeadSize;
+  pack_header.body_len = pack_body_size;
+  pack_header.seq = header_->seq;
   // TODO: timestamp
 
   uint32_t cur_tail = header_->tail;
-  if (cur_tail >= header_->head) {
+  uint32_t cur_head = header_->head;
+  if (cur_tail >= cur_head) {
     // check
     const uint32_t tail_free_size = header_->capacity - cur_tail;
 
     if (tail_free_size < align_pack_size) {
       // tail_free_size == align_pack_size 注意要讲cur_tail置0
-      if (header_->head <= align_pack_size) {
+      if (cur_head <= align_pack_size) {
         // header_->head == align_pack_size会导致tail head 重叠
         // 队尾只放站位包头
         return err::kChanFull;
@@ -91,16 +92,18 @@ int CSendUnlockQueue::Send(const char* data, uint32_t len) {
 
       if (tail_free_size < kPackHeadSize) {
         // 剩余空间小于head大小不填充包头
+        // cout << "send less than pack size" << tail_free_size << ", pack head " << kPackHeadSize << endl;
       }
       else {
         // 填充占位包头
+        // cout << "send place hold " << tail_free_size << ", pack head " << kPackHeadSize << endl;
         memcpy(buff_ + cur_tail, &(ChannelPackHead::place_hold_head), kPackHeadSize);
       }
       cur_tail = 0;
     }
   }
 
-  memcpy(buff_ + cur_tail, &(cur_head), kPackHeadSize);
+  memcpy(buff_ + cur_tail, &(pack_header), kPackHeadSize);
   memcpy(buff_ + cur_tail + kPackHeadSize, data, pack_body_size);
   cur_tail = (cur_tail + align_pack_size) % header_->capacity;
 
@@ -147,7 +150,7 @@ int CRecvUnlockQueue::GetNextPack(uint32_t &cur_head,
     if (alloc_size < tail_alloc_size) {
       return err::kChanPackInvalid;
     }
-    //cout << "encounter less tail " << cur_tail << " head:" <<cur_head << endl;
+    // cout << "encounter less tail " << cur_tail << " head:" <<cur_head << endl;
     cur_head = 0;
   }
   else {
@@ -157,7 +160,7 @@ int CRecvUnlockQueue::GetNextPack(uint32_t &cur_head,
         return err::kChanPackInvalid;
       }
       cur_head = 0;
-      //cout << "encounter place hold: " << endl;
+      // cout << "encounter place hold: " << endl;
     }
   }
 
@@ -172,7 +175,7 @@ int CRecvUnlockQueue::GetNextPack(uint32_t &cur_head,
   }
 
   if (align_pack_size > alloc_size) {
-    //cout << "pack size: " << align_pack_size << " alloc size: " << alloc_size << endl
+    // cout << "pack size: " << align_pack_size << " alloc size: " << alloc_size << endl
     //  << " cur_tail: " << cur_tail << " head: " << header_->head << " cur_head: " << cur_head << endl;
     return err::kChanPackInvalid;
   }
@@ -247,7 +250,7 @@ int CRecvUnlockQueue::Recv(char* data, uint32_t& len) {
   return kOk;
 }
 
-int CreateUnlockQueue(
+int yarf::channel::CreateUnlockQueue(
   char* mem, uint32_t capacity,
   IRecvUnlockQueue* &recv_queue, ISendUnlockQueue* &send_queue, 
   bool reset ) {

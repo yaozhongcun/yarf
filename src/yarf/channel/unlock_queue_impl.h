@@ -32,7 +32,7 @@ class UnlockQueueHead
   volatile uint32_t head; // 消息的头指针
   volatile uint32_t tail; // 消息的尾指针
   uint32_t seq;  // 发送消息的序列号，发送方修改和访问，
-  uint32_t reserve[kUnlockQueueReserve];  // 预留3个字段使用
+  uint32_t reserve[kUnlockQueueReserve];  // 预留12个字段使用
   char ctrl_msg[kUnlockQueueMaxCtrlMsg]; // 
   uint32_t ctrl_msg_len; // 忘记设计初衷是做什么的....
  public:

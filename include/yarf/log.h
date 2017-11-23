@@ -22,7 +22,7 @@
 
 #define RAW_LOG(level, format, args...) {\
   const char* base_name =  strrchr(__FILE__, '/');\
-  printf(level"|%ld|%s:%d:%s|"format"\n", gettid(), \
+  printf(level"|%ld|%s:%d:%s|" format "\n", gettid(), \
     base_name?base_name+1:__FILE__  , __LINE__, __func__, ##args);\
 }\
 
