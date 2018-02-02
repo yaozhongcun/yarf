@@ -52,7 +52,7 @@ static const int kChanCfgSize = -1030;
 static const int kChanCfgInvalid = -1031;  // 配置内容   错误
 static const int kChanCfgDuplicateChan = -1032;
 // 全局配置中channel配置数量达到kMaxChannelCount
-static const int kChanCfgMaxChan = -1033;
+static const int kCfgMaxChan = -1033;
 
 // -2999 ~ -2000 epoll
 static const int kEpollCreate = -2000;

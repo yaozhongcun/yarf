@@ -7,9 +7,10 @@
  *      Author: YAOZHONGCUN
  */
 
-#include "channel_pack.h"
+#include "./channel_pack.h"
 
-using namespace yarf;
-using namespace yarf::channel;
 
-const ChannelPackHead ChannelPackHead::place_hold_head(kChannelCmdPlaceHolder);
+using yarf::channel::ChannelPackHead;
+
+const ChannelPackHead ChannelPackHead::place_hold_head(
+    yarf::channel::kChannelCmdPlaceHolder);

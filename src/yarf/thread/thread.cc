@@ -1,4 +1,6 @@
-/*
+/* Copyright (c) 2017, Johnyao 
+ * All rights reserved.
+ * 
  * thread.cc
  *
  *  Created on: 2016年11月22日
@@ -12,7 +14,6 @@ using yarf::thread::CThread;
 
 CThread::CThread()
 : stop_(false), start_(false) {
-
 }
 
 bool CThread::Start() {

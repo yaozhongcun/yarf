@@ -1,4 +1,6 @@
-/*
+/* Copyright (c) 2017, Johnyao 
+ * All rights reserved.
+ *
  * unlock_queue.cc
  *
  *  Created on: 2016年5月3日
@@ -11,11 +13,13 @@
 using std::cout;
 using std::endl;
 
-#include "unlock_queue_impl.h"
+#include "./unlock_queue_impl.h"
 #include "yarf/memory/misc.h"
 
-using namespace yarf;
-using namespace yarf::channel;
+using yarf::channel::CUnlockQueue;
+using yarf::channel::ChannelPackHead;
+using yarf::channel::CSendUnlockQueue;
+using yarf::channel::CRecvUnlockQueue;
 
 static const uint32_t kPackHeadSize = sizeof(ChannelPackHead);
 
@@ -36,16 +40,16 @@ int CUnlockQueue::Init(char* recv_mem, uint32_t recv_capacity,
 
 int CSendUnlockQueue::Init(char* mem, uint32_t capacity) {
   if (NULL == mem) {
-    return err::kArg;
+    return yarf::err::kArg;
   }
   if (capacity <=
     sizeof(UnlockQueueHead) + sizeof(ChannelPackHead)) {
-    return err::kArg;
+    return yarf::err::kArg;
   }
 
   header_ = reinterpret_cast<UnlockQueueHead*>(mem);
   if (!header_->IsValid(capacity)) {
-    return err::kChanHeadInvalid;
+    return yarf::err::kChanHeadInvalid;
   }
   buff_ = mem + sizeof(UnlockQueueHead);
 
@@ -53,28 +57,27 @@ int CSendUnlockQueue::Init(char* mem, uint32_t capacity) {
 }
 
 int CSendUnlockQueue::Send(const char* data, uint32_t len) {
-  
   const uint32_t pack_body_size = len;
   const uint32_t pack_size = kPackHeadSize + pack_body_size;
   const uint32_t align_pack_size = memory::GetAlignmentSize(pack_size);
 
   if (0 != (align_pack_size % kChannelAlignLevel)
     || align_pack_size < pack_size) {
-    return err::kUnexpect;
+    return yarf::err::kUnexpect;
   }
 
   const uint32_t free_size =
     (header_->capacity - header_->tail - 1 + header_->head) % header_->capacity;
 
   if (free_size < align_pack_size) {
-    return err::kChanFull;
+    return yarf::err::kChanFull;
   }
 
   ChannelPackHead pack_header;
   pack_header.align_body_len = align_pack_size - kPackHeadSize;
   pack_header.body_len = pack_body_size;
   pack_header.seq = header_->seq;
-  // TODO: timestamp
+  // TODO(johnyao): timestamp
 
   uint32_t cur_tail = header_->tail;
   uint32_t cur_head = header_->head;
@@ -87,17 +90,19 @@ int CSendUnlockQueue::Send(const char* data, uint32_t len) {
       if (cur_head <= align_pack_size) {
         // header_->head == align_pack_size会导致tail head 重叠
         // 队尾只放站位包头
-        return err::kChanFull;
+        return yarf::err::kChanFull;
       }
 
       if (tail_free_size < kPackHeadSize) {
         // 剩余空间小于head大小不填充包头
-        // cout << "send less than pack size" << tail_free_size << ", pack head " << kPackHeadSize << endl;
-      }
-      else {
+        // cout << "send less than pack size" << tail_free_size
+        // << ", pack head " << kPackHeadSize << endl;
+      } else {
         // 填充占位包头
-        // cout << "send place hold " << tail_free_size << ", pack head " << kPackHeadSize << endl;
-        memcpy(buff_ + cur_tail, &(ChannelPackHead::place_hold_head), kPackHeadSize);
+        // cout << "send place hold " << tail_free_size
+        // << ", pack head " << kPackHeadSize << endl;
+        memcpy(buff_ + cur_tail,
+          &(ChannelPackHead::place_hold_head), kPackHeadSize);
       }
       cur_tail = 0;
     }
@@ -115,16 +120,16 @@ int CSendUnlockQueue::Send(const char* data, uint32_t len) {
 
 int CRecvUnlockQueue::Init(char* mem, uint32_t capacity) {
   if (NULL == mem) {
-    return err::kArg;
+    return yarf::err::kArg;
   }
   if (capacity <=
     sizeof(UnlockQueueHead) + sizeof(ChannelPackHead)) {
-    return err::kArg;
+    return yarf::err::kArg;
   }
 
   header_ = reinterpret_cast<UnlockQueueHead*>(mem);
   if (!header_->IsValid(capacity)) {
-    return err::kChanHeadInvalid;
+    return yarf::err::kChanHeadInvalid;
   }
   buff_ = mem + sizeof(UnlockQueueHead);
 
@@ -135,29 +140,30 @@ int CRecvUnlockQueue::Init(char* mem, uint32_t capacity) {
 int CRecvUnlockQueue::GetNextPack(uint32_t &cur_head,
   uint32_t &align_pack_size,
   ChannelPackHead *&pack_head) {
-  
   cur_head = header_->head;
   const uint32_t cur_tail = header_->tail;
 
-   if (cur_tail == cur_head) {
-    return err::kChanEmpty;
+  if (cur_tail == cur_head) {
+    return yarf::err::kChanEmpty;
   }
   align_pack_size = 0;
 
-  uint32_t alloc_size = (cur_tail + header_->capacity - cur_head) % header_->capacity;
+  uint32_t alloc_size =
+    (cur_tail + header_->capacity - cur_head) % header_->capacity;
   const uint32_t tail_alloc_size = header_->capacity - cur_head;
   if (tail_alloc_size < kPackHeadSize) {
     if (alloc_size < tail_alloc_size) {
-      return err::kChanPackInvalid;
+      return yarf::err::kChanPackInvalid;
     }
-    // cout << "encounter less tail " << cur_tail << " head:" <<cur_head << endl;
+    // cout << "encounter less tail " << cur_tail
+    // << " head:" <<cur_head << endl;
     cur_head = 0;
-  }
-  else {
-    ChannelPackHead* try_pack_head = reinterpret_cast<ChannelPackHead*>(buff_ + cur_head);
+  } else {
+    ChannelPackHead* try_pack_head =
+      reinterpret_cast<ChannelPackHead*>(buff_ + cur_head);
     if (kChannelCmdPlaceHolder == try_pack_head->cmd) {
       if (alloc_size < tail_alloc_size) {
-        return err::kChanPackInvalid;
+        return yarf::err::kChanPackInvalid;
       }
       cur_head = 0;
       // cout << "encounter place hold: " << endl;
@@ -171,30 +177,30 @@ int CRecvUnlockQueue::GetNextPack(uint32_t &cur_head,
 
   // 其他check
   if (kChannelCmdTransfer != pack_head->cmd) {
-    return err::kUnexpect;
+    return yarf::err::kUnexpect;
   }
 
   if (align_pack_size > alloc_size) {
-    // cout << "pack size: " << align_pack_size << " alloc size: " << alloc_size << endl
-    //  << " cur_tail: " << cur_tail << " head: " << header_->head << " cur_head: " << cur_head << endl;
-    return err::kChanPackInvalid;
+    // cout << "pack size: " << align_pack_size << " alloc size: "
+    // << alloc_size << endl << " cur_tail: " << cur_tail << " head: "
+    // << header_->head << " cur_head: " << cur_head << endl;
+    return yarf::err::kChanPackInvalid;
   }
 
   return kOk;
 }
 
 int CRecvUnlockQueue::Peek(const char*& data, uint32_t& len) {
-
   uint32_t cur_head = header_->head;
   ChannelPackHead* pack_head = NULL;
   uint32_t align_pack_size = 0;
 
   auto ret = GetNextPack(cur_head, align_pack_size, pack_head);
-  if (ret < 0 ) {
+  if (ret < 0) {
     return ret;
   }
   if (NULL == pack_head) {
-    return err::kUnexpect;
+    return yarf::err::kUnexpect;
   }
 
   data = buff_ + cur_head + kPackHeadSize;
@@ -209,11 +215,11 @@ int CRecvUnlockQueue::Drop() {
   uint32_t align_pack_size = 0;
 
   auto ret = GetNextPack(cur_head, align_pack_size, pack_head);
-  if (ret < 0 ) {
+  if (ret < 0) {
     return ret;
   }
   if (NULL == pack_head) {
-    return err::kUnexpect;
+    return yarf::err::kUnexpect;
   }
 
   cur_head = (cur_head + align_pack_size) % header_->capacity;
@@ -224,21 +230,20 @@ int CRecvUnlockQueue::Drop() {
 }
 
 int CRecvUnlockQueue::Recv(char* data, uint32_t& len) {
-
   uint32_t cur_head = header_->head;
   ChannelPackHead* pack_head = NULL;
   uint32_t align_pack_size = 0;
 
   auto ret = GetNextPack(cur_head, align_pack_size, pack_head);
-  if (ret < 0 ) {
+  if (ret < 0) {
     return ret;
   }
   if (NULL == pack_head) {
-    return err::kUnexpect;
+    return yarf::err::kUnexpect;
   }
 
   if (len < pack_head->body_len) {
-    return err::kChanRecvSpaceLimit;
+    return yarf::err::kChanRecvSpaceLimit;
   }
 
   memcpy(data, buff_ + cur_head + kPackHeadSize, pack_head->body_len);
@@ -252,7 +257,7 @@ int CRecvUnlockQueue::Recv(char* data, uint32_t& len) {
 
 int yarf::channel::CreateUnlockQueue(
   char* mem, uint32_t capacity,
-  IRecvUnlockQueue* &recv_queue, ISendUnlockQueue* &send_queue, 
+  IRecvUnlockQueue* &recv_queue, ISendUnlockQueue* &send_queue,
   bool reset ) {
   if (reset) {
     UnlockQueueHead* head = reinterpret_cast<UnlockQueueHead*>(mem);
@@ -273,50 +278,4 @@ int yarf::channel::CreateUnlockQueue(
   ret = tmp_send_queue->Init(mem, capacity);
 
   return ret;
- }
-
-
-  //uint32_t cur_head = header_->head;
-  //const uint32_t cur_tail = header_->tail;
-
-  //if (cur_tail == cur_head) {
-  //  return err::kChanEmpty;
-  //}
-  //
-  //static const uint32_t pack_head_size = sizeof(ChannelPackHead);
-  //uint32_t align_pack_size = 0;
-
-  ////uint32_t pack_size = 0;
-  //uint32_t alloc_size = (cur_tail + header_->capacity - cur_head) % header_->capacity;
-  //const uint32_t tail_alloc_size = header_->capacity - cur_head;
-
-  //if (tail_alloc_size < pack_head_size) {
-  //  if (alloc_size < tail_alloc_size) {
-  //    return err::kChanPackInvalid;
-  //  }
-  //  cur_head = 0;
-  //}
-  //else {
-  //  ChannelPackHead* try_pack_head = reinterpret_cast<ChannelPackHead*>(buff_ + cur_head);
-  //  if (kChannelCmdPlaceHolder == try_pack_head->cmd) {
-  //    if (alloc_size < tail_alloc_size) {
-  //      return err::kChanPackInvalid;
-  //    }
-  //    cur_head = 0;
-  //  }
-  //}
-
-  //alloc_size = (cur_tail + header_->capacity - cur_head) % header_->capacity;
-
-  //ChannelPackHead* pack_head = reinterpret_cast<ChannelPackHead*>(buff_ + cur_head);
-  //align_pack_size = pack_head_size + pack_head->align_body_len;
-
-  //// 其他check
-  //if (kChannelCmdTransfer != pack_head->cmd) {
-  //  return err::kUnexpect;
-  //}
-
-  //if (align_pack_size > alloc_size) {
-  //  return err::kChanPackInvalid;
-  //}
-
+}

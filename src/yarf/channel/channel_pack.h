@@ -23,7 +23,7 @@ static const uint16_t kChannelCmdHeart = 3;  // 暂未使用
 
 struct ChannelPackHead {
   uint16_t version;  // 当前pack head版本 暂未启用
-  uint16_t head_len;	// channel pack head 长度
+  uint16_t head_len;  // channel pack head 长度
   uint16_t body_len;  // channel pack body len
   uint16_t align_body_len;  // 字节对齐后的 channel pack body len
   uint16_t cmd;  // 命令字   数据传输  心跳包   伪造包
@@ -32,7 +32,7 @@ struct ChannelPackHead {
   uint64_t time_stamp;  // time stamp 暂未启用
   uint32_t reserve[6];  // 保留扩展的字段
 
-  ChannelPackHead(uint16_t cur_cmd = kChannelCmdTransfer)
+  explicit ChannelPackHead(uint16_t cur_cmd = kChannelCmdTransfer)
   : version(0),
     head_len(sizeof(ChannelPackHead)),
     body_len(0), align_body_len(0),

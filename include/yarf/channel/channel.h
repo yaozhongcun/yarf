@@ -50,7 +50,6 @@ class IChannelInfo {
 };
 
 }  // namespace channel
-
 }  // namespace yarf
 
 #endif  // YARF_CHANNEL_CHANNEL_H_

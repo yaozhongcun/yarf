@@ -20,22 +20,13 @@
 
 #define gettid() syscall(__NR_gettid)
 
+// TODO: add log level control here
+
 #define RAW_LOG(level, format, args...) {\
   const char* base_name =  strrchr(__FILE__, '/');\
   printf(level"|%ld|%s:%d:%s|" format "\n", gettid(), \
     base_name?base_name+1:__FILE__  , __LINE__, __func__, ##args);\
 }\
-
-//////////////////////////////////////////////////////////////////////////////////////
-#define LIB4G_ERR_LOG(format, args...) RAW_LOG("ERROR", format, ##args);
-
-#define LIB4G_WARN_LOG(format, args...) RAW_LOG("WARN", format, ##args);
-
-#define LIB4G_INFO_LOG(format, args...) RAW_LOG("INFO", format, ##args);
-
-#define LIB4G_DEBUG_LOG(format, args...) RAW_LOG("DEBUG", format, ##args);
-
-#define LIB4G_TRACE_LOG(format, args...) RAW_LOG("TRACE", format, ##args);
 
 //////////////////////////////////////////////////////////////////////////////////////
 #define ERR_LOG(format, args...) RAW_LOG("ERROR", format, ##args);
