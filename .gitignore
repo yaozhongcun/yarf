@@ -1,3 +1,2 @@
 build/
-compile.sh
-cpplint.py
+*.pyc
