@@ -108,6 +108,13 @@ def get_protodesc(file_name, file_pre):
     else:
         commond = "./protoc --python_out=. " + " ./" + file_name
     os.system(commond)
+
+    if iswin():
+        commond = "protoc.exe --cpp_out=. " + " ./" + file_name
+    else:
+        commond = "./protoc --cpp_out=. " + " ./" + file_name
+    os.system(commond)
+
     pbf = open(file_pre + "_pb2.py")
     line = pbf.readline()
     file_pb = ""
@@ -138,7 +145,7 @@ def handle_proto(file_pre, root_conf):
 
     output = gen_code(root_type, 0)
 
-    conf_file_name = file_pre+".conf"
+    conf_file_name = file_pre+".pb.txt"
     conf_file = open(conf_file_name, 'w')
     conf_file.write(output)
 

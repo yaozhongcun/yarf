@@ -27,6 +27,8 @@ static const int kInternal = -2;  // 内部错误
 static const int kUnexpect = -3;  // 理论上看不到错误，返回该错误代替assert
 static const int kSpaceLimit = -4;  // 内存不足
 
+static const int kFileIo = -101;  // 内存不足
+
 // 共享内存的错误
 static const int kShmGet = -500;
 static const int kShmNotExist = -501;

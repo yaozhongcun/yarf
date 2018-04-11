@@ -22,6 +22,7 @@ using yarf::channel::UnlockQueueHead;
 using yarf::memory::CShm;
 
 bool GlobalConfig::IsValid() {
+  // TODO:
   return true;
 }
 

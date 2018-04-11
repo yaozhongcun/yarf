@@ -33,8 +33,8 @@ class CThread {
 
  protected:
   pthread_t thread_id_;
-  bool stop_;
-  bool start_;
+  volatile bool stop_;
+  volatile bool start_;
 };  // CThread
 
 

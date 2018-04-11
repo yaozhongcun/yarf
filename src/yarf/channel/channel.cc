@@ -50,7 +50,7 @@ int CChannel::Init(uint32_t channel_mgr_key,
     return ret_code;
   }
 
-  if (shm.size() != sizeof(yarf::channel::GlobalConfig))) {
+  if (shm.size() != sizeof(yarf::channel::GlobalConfig)) {
     return yarf::err::kChanCfgSize;
   }
   global_channel_config =

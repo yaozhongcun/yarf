@@ -19,8 +19,11 @@ set(YARF_LIB_DIR ${WORK_DIR}/lib)
 set(GTEST_INC_DIR ${WORK_DIR}/3rd/gtest1.8)
 set(GTEST_LIB_DIR ${WORK_DIR}/lib)
 
+set(PROTO_INC_DIR ${WORK_DIR}/3rd/protobuf3.3)
+set(PROTO_LIB_DIR ${WORK_DIR}/lib)
+
 ########################################################
-include_directories(${YARF_INC_DIR} ${GTEST_INC_DIR})
+include_directories(${YARF_INC_DIR} ${GTEST_INC_DIR} ${PROTO_INC_DIR})
 link_directories(${YARF_LIB_DIR})
 
 set(LIBRARY_OUTPUT_PATH ${YARF_LIB_DIR}/)
