@@ -8,7 +8,7 @@ shell_dir=`dirname $0`
 cd $shell_dir
 shell_dir=`pwd`
 #echo $shell_dir
-echo -e "\033[32mcompile in ${shell_dir} \033[0m"
+echo -e "\033[32mcheck in ${shell_dir} \033[0m"
 
 
 cd include/yarf
