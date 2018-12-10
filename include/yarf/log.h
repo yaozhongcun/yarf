@@ -17,8 +17,11 @@
 #include <unistd.h>
 #include <sys/syscall.h>
 
-
+#ifdef MAC 
+#define gettid() syscall(SYS_thread_selfid) 
+#else
 #define gettid() syscall(__NR_gettid)
+#endif
 
 // TODO: add log level control here
 

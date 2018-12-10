@@ -9,6 +9,9 @@ compile env:
 
   cmake: cmake version 2.8.12.2
 
+mac:
+  modify CMakeList.txt, add -DMAC
+
 3rd lib: 
 
   gtest 1.8, googletest-release-1.8.0.tar.gz

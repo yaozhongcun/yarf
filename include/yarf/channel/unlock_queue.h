@@ -13,6 +13,7 @@
 #include <cstring>
 #include "yarf/err.h"
 // #include "channel_pack.h"
+#include <sys/shm.h>
 
 namespace yarf {
 namespace channel {

@@ -65,8 +65,8 @@ set(WORK_DIR ${CMAKE_CURRENT_SOURCE_DIR}/)
 set(YARF_INC_DIR ${WORK_DIR}/../yarf/include/)
 set(YARF_LIB_DIR ${WORK_DIR}/../yarf/lib)
 
-set(GTEST_INC_DIR ${WORK_DIR}/../yarf/3rd/gtest1.8)
-set(GTEST_LIB_DIR ${WORK_DIR}/../yarf/lib)
+set(GTEST_INC_DIR ${WORK_DIR}/../3rd/gtest1.8/include)
+set(GTEST_LIB_DIR ${WORK_DIR}/../3rd/gtest1.8/lib)
 
 set(SELF_INC_DIR ${WORK_DIR}/include/)
 
