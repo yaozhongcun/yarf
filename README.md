@@ -10,14 +10,19 @@ compile env:
   cmake: cmake version 2.8.12.2
 
 mac:
+
   modify CMakeList.txt, add -DMAC
+
 
 we recommand project directory tree like this:
 
-your workdir
---3rd
---yarf
---another_svr 
+-your_workdir
+
+---3rd
+
+---yarf
+
+---another_svr 
 
 
 3rd lib: 
